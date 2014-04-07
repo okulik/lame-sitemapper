@@ -1,0 +1,8 @@
+max_page_depth: 2
+log_level: 1
+ignore_robots: false
+web_settings:
+  followlocation: true
+  ssl_verifypeer: false
+  ssl_verifyhost: 2
+  useragent: sitemapper v0.0.0.1
