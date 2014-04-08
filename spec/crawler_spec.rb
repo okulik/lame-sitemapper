@@ -12,7 +12,6 @@ module SiteMapper
       @robots = YAML::load(IO.read(File.join(File.dirname(__FILE__), 'fixtures/robots_fixtures.yml'))).symbolize
       @out = StringIO.new
       @options = OpenStruct.new(skip_robots: false, max_page_depth: 10)
-      LOGGER.level = Logger::FATAL + 1
     end
 
     describe "test robots.txt stuff" do
