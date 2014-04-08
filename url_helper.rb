@@ -17,20 +17,30 @@ module SiteMapper
     end
 
     def self.get_normalized_uri host, uri
+      # convert to Addressable::URI
       host = Addressable::URI.parse(host) unless host.is_a?(Addressable::URI)
-      uri = Addressable::URI.parse(uri) unless uri.is_a?(Addressable::URI)
 
-      url = uri.to_s
-      if url.start_with?("//")
-        url = "#{host.scheme}:#{url}" 
-      elsif url.start_with?("/")
-        url = host.to_s + url[1..-1]
-      elsif url !~ /^http(s)?\:\/\//
-        url = "#{host}#{url}"
+      # expand urls to a full path
+      url_string = uri.to_s
+      if url_string.start_with?("//")
+        url_string = "#{host.scheme}:#{url_string}" 
+      elsif url_string.start_with?("/")
+        url_string = host.to_s + url_string[1..-1]
+      elsif url_string !~ /^http(s)?\:\/\//
+        url_string = "#{host}#{url_string}"
       end
-      url.slice!(/##{uri.fragment}$/) if uri.fragment
-      URI.parse(url)
-      Addressable::URI.parse(url).normalize
+
+      # verify final path (will throw if invalid)
+      URI.parse(url_string)
+
+      # convert string back to Addressable::URI
+      uri = Addressable::URI.parse(url_string).normalize
+      
+      # remove fragments and reorder query parameters
+      uri.fragment = nil
+      uri.query = uri.query.split("&").map(&:strip).sort.join("&") unless uri.query.nil? || uri.query.empty?
+
+      return uri
     rescue URI::BadURIError, URI::InvalidURIError
       nil
     end
