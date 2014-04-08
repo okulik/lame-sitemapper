@@ -14,7 +14,7 @@ module SiteMapper
       @options = OpenStruct.new(skip_robots: false, max_page_depth: 10)
     end
 
-    let(:root) { @crawler.start(URI("http://www.nisdom.com/")) }
+    let(:root) { @crawler.start(URI("http://www.nisdom.com/")).first }
 
     describe "test robots.txt stuff" do
       before(:each) do

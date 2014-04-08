@@ -40,7 +40,7 @@ module SiteMapper
       reasons << "depth" if (@non_scraped_code & Page::NON_SCRAPED_DEPTH) > 0
       reasons << "robots" if (@non_scraped_code & Page::NON_SCRAPED_ROBOTS) > 0
       reasons << "ext" if (@non_scraped_code & Page::NON_SCRAPED_DOMAIN) > 0
-      reasons.join("|")
+      return "#{reasons.join('|')} "
     end
 
     def each(&block)

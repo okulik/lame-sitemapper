@@ -92,12 +92,14 @@ module SiteMapper
           exit
         end
 
-        root = Crawler.new(@out, @options).start(normalized_host)
+        LOGGER.info "starting with #{host}, options #{@options.inspect}"
+
+        root, normalized_host = Crawler.new(@out, @options).start(normalized_host)
         return unless root
 
         LOGGER.info "found #{root.count} pages"
 
-        @out.puts ReportGenerator.new(@options).send("to_#{@options.report_type}", root) if @out
+        @out.puts ReportGenerator.new(@options, normalized_host).send("to_#{@options.report_type}", root) if @out
       rescue OptionParser::InvalidArgument, OptionParser::InvalidOption, OptionParser::MissingArgument =>e
         @out.puts e if @out
         @out.puts @opt_parser if @out

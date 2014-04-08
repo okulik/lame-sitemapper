@@ -32,8 +32,6 @@ module SiteMapper
     end
 
     def start(host)
-      LOGGER.info "starting with #{host}"
-
       unless @opts.skip_robots
         @robots = WebRobots.new(SETTINGS[:web_settings][:useragent], {
           crawl_delay: :sleep,
@@ -53,7 +51,7 @@ module SiteMapper
       r = get_http_response(host, :head)
       host = UrlHelper.get_normalized_host(r[:effective_url]) if r && r[:redirect_count].to_i > 0
 
-      return crawl(host, host)
+      return [crawl(host, host), host]
     end
 
     private
@@ -80,21 +78,14 @@ module SiteMapper
     end
 
     def create_page(host, uri, depth)
-      # get normalized uri
       normalized_uri = UrlHelper.get_normalized_uri(host, uri)
       return nil unless normalized_uri
       
-      # trash page object if url was already seen
       return nil if already_seen?(normalized_uri, depth)
-
-      # create page object
       page = Page.new(normalized_uri)
-
-      # check if we should crawl it
-      #return page unless should_crawl?(host, page, depth)
+      seen_pages[Digest::MurmurHash64B.hexdigest(normalized_uri.to_s)] = page
       return page unless should_crawl?(host, page, depth)
 
-      # get page content along with any redirect url
       r = get_http_response(normalized_uri)
       if r.nil? || r[:body].nil?
         LOGGER.error "failed to get HTML from url #{normalized_uri}"
@@ -106,13 +97,9 @@ module SiteMapper
         normalized_uri = UrlHelper.get_normalized_uri(host, r[:effective_url])
         return page unless normalized_uri
 
-        # modify path to match redirect
-        page.path = normalized_uri
-
-        # trash page object if url was already seen
+        page.path = normalized_uri # modify path to match redirect
         return nil if already_seen?(normalized_uri, depth)
-
-        # check if we should crawl it
+        seen_pages[Digest::MurmurHash64B.hexdigest(normalized_uri.to_s)] = page
         return page unless should_crawl?(host, page, depth)
       end
 
@@ -131,16 +118,10 @@ module SiteMapper
     end
 
     def already_seen?(uri, depth)
-      digest = Digest::MurmurHash64B.hexdigest(uri.to_s)
-
-      # check if we have already seen such url
-      if seen_pages[digest]
+      if seen_pages[Digest::MurmurHash64B.hexdigest(uri.to_s)]
         LOGGER.debug "#{prefix(depth)} skipping #{uri}, already seen"
         return true
       end
-
-      # Store page's url to a cache to avoid crawler endless loops. This cache will also serve for fast page nodes tree traversal.
-      seen_pages[digest] = uri
 
       return false
     end

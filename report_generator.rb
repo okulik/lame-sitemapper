@@ -32,8 +32,9 @@ EOS
 </html>
 EOS
 
-    def initialize options
+    def initialize options, host
       @options = options
+      @host = host
     end
 
     def to_text(page)
@@ -58,25 +59,28 @@ EOS
     def to_html(page)
       out = HTML_PROLOG % [ page.path, page.path ]
       page.each do |p|
-        out << "<h2>Page <a href=\"#{p.path}\">#{p.path}</a></h2>"
+        out << "<h2>#{scraped_mark(p)}#{p.format_codes}<a href=\"#{p.path}\">#{p.path}</a></h2>\n"
         if p.scraped?
-          out << "<h3>Images</h3>" if p.images.count > 0
+          out << "<h3>Images</h3>\n" if p.images.count > 0
           p.images.each do |img|
-            out << "<div>"
-            out << "<a href=\"#{img}\">#{img}</a>"
-            out << "</div>"
+            uri = UrlHelper.get_normalized_uri(@host, img)
+            out << "<div>\n"
+            out << "<a href=\"#{uri}\">#{uri}</a>\n"
+            out << "</div>\n"
           end
-          out << "<h3>Links</h3>" if p.links.count > 0
+          out << "<h3>Links</h3>\n" if p.links.count > 0
           p.links.each do |link|
-            out << "<div>"
-            out << "<p>#{link}</p>"
-            out << "</div>"
+            uri = UrlHelper.get_normalized_uri(@host, link)
+            out << "<div>\n"
+            out << "<p>#{uri}</p>\n"
+            out << "</div>\n"
           end
-          out << "<h3>Scripts</h3>" if p.scripts.count > 0
+          out << "<h3>Scripts</h3>\n" if p.scripts.count > 0
           p.scripts.each do |script|
-            out << "<div>"
-            out << "<p>#{script}</p>"
-            out << "</div>"
+            uri = UrlHelper.get_normalized_uri(@host, script)
+            out << "<div>\n"
+            out << "<p>#{uri}</p>\n"
+            out << "</div>\n"
           end
         end
       end
@@ -92,7 +96,7 @@ EOS
       else
         details = ": #{page.format_codes}"
       end
-      out << "#{indent}(#{depth}#{page.scraped? ? "*" : ""}) page #{page.path}#{details}\n"
+      out << "#{indent}(#{depth})#{scraped_mark(page)}page #{page.path}#{details}\n"
       return unless page.scraped?
 
       if page.images.count > 0
@@ -115,5 +119,8 @@ EOS
       end
     end
 
+    def scraped_mark(page)
+      page.scraped? ? "* " : ""
+    end
   end
 end
