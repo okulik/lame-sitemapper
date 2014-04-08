@@ -1,5 +1,5 @@
-require 'addressable/uri'
-require 'uri'
+require "addressable/uri"
+require "uri"
 
 module SiteMapper
   class UrlHelper
@@ -9,7 +9,7 @@ module SiteMapper
       return nil unless uri
       uri = uri.normalize
       return nil unless %w(http https).include?(uri.scheme)
-      return nil unless (uri.path.empty? || uri.path == '/') && uri.query.nil?
+      return nil unless (uri.path.empty? || uri.path == "/") && uri.query.nil?
       return nil unless uri.to_s =~ URI::DEFAULT_PARSER.regexp[:ABS_URI]
       uri
     rescue URI::BadURIError, URI::InvalidURIError
@@ -18,14 +18,17 @@ module SiteMapper
 
     def self.get_normalized_uri host, uri
       host = Addressable::URI.parse(host) unless host.is_a?(Addressable::URI)
+      uri = Addressable::URI.parse(uri) unless uri.is_a?(Addressable::URI)
+
       url = uri.to_s
-      if url.start_with?('//')
+      if url.start_with?("//")
         url = "#{host.scheme}:#{url}" 
-      elsif url.start_with?('/')
+      elsif url.start_with?("/")
         url = host.to_s + url[1..-1]
       elsif url !~ /^http(s)?\:\/\//
         url = "#{host}#{url}"
       end
+      url.slice!(/##{uri.fragment}$/) if uri.fragment
       URI.parse(url)
       Addressable::URI.parse(url).normalize
     rescue URI::BadURIError, URI::InvalidURIError

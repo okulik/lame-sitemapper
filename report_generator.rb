@@ -1,14 +1,23 @@
-require_relative 'page'
+require_relative "page"
 
 module SiteMapper
   class ReportGenerator
-    INDENT = ' '
+    INDENT = " "
     XML_PROLOG = <<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+EOS
+    XML_EPILOG = "</urlset>"
+    XML_NODE_TEMPLATE1 = <<-EOS
+<url>
+  <loc>%s</loc>
+</url>
+EOS
+    XML_NODE_TEMPLATE2 = <<-EOS
+<url>
+  <loc>%s</loc>
+  <changefreq>%s</changefreq>
+</url>
 EOS
 
     def initialize options
@@ -23,15 +32,29 @@ EOS
 
     def to_sitemap(page)
       out = XML_PROLOG
-      page.each { |p| out << "p.path\n" }
+      page.each do |p|
+        if @options.frequency_type != :none
+          out << XML_NODE_TEMPLATE2 % [ p.path, @options.frequency_type ]
+        else
+          out << XML_NODE_TEMPLATE1 % [ p.path ]
+        end
+      end
+      out << XML_EPILOG
       return out
     end
 
     private
 
     def tree_to_text(page, out, depth=0)
-      indent = INDENT*2*depth
-      out << "#{indent}page(#{depth}#{page.scraped? ? '*' : ''}): #{page.path}\n"
+      indent = INDENT * 2 * depth
+      if page.scraped?
+        details = ": a(#{page.anchors.count}), img(#{page.images.count}), link(#{page.links.count}), script(#{page.scripts.count})"
+      else
+        details = ": #{page.format_codes}"
+      end
+      out << "#{indent}(#{depth}#{page.scraped? ? "*" : ""}) page #{page.path}#{details}\n"
+      return unless page.scraped?
+
       if page.images.count > 0
         out << "#{indent}#{INDENT}images:\n"
         page.images.each { |img| out << "#{indent}#{INDENT*2}#{img}\n" }

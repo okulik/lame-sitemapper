@@ -6,6 +6,11 @@ module SiteMapper
     attr_reader :images
     attr_reader :links
     attr_reader :scripts
+    attr_accessor :non_scraped_code
+
+    NON_SCRAPED_DEPTH = 1
+    NON_SCRAPED_DOMAIN = 2
+    NON_SCRAPED_ROBOTS = 4
 
     def initialize(path)
       @path = path
@@ -14,7 +19,7 @@ module SiteMapper
       @images = []
       @links = []
       @scripts = []
-      @scraped = false
+      @non_scraped_code = 0
     end
 
     def count
@@ -27,11 +32,15 @@ module SiteMapper
     end
 
     def scraped?
-      @scraped
+      @non_scraped_code == 0
     end
 
-    def scraped=(value)
-      @scraped = value
+    def format_codes
+      reasons = []
+      reasons << "depth" if (@non_scraped_code & Page::NON_SCRAPED_DEPTH) > 0
+      reasons << "robots" if (@non_scraped_code & Page::NON_SCRAPED_ROBOTS) > 0
+      reasons << "ext" if (@non_scraped_code & Page::NON_SCRAPED_DOMAIN) > 0
+      reasons.join("|")
     end
 
     def each(&block)
