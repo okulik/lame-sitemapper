@@ -57,7 +57,7 @@ module SiteMapper
       end
 
       context "when called with full path" do
-        it "should return itself" do
+        it "should return that same path" do
           UrlHelper.get_normalized_uri('http://digitalocean.com', 'http://www.digitalocean.com').to_s.should eq 'http://www.digitalocean.com/'
           UrlHelper.get_normalized_uri('http://digitalocean.com', 'http://www.digitalocean.com/resources').to_s.should eq 'http://www.digitalocean.com/resources'
         end
@@ -69,7 +69,7 @@ module SiteMapper
         let(:host) { 'http://digitalocean.com/' }
         let(:uri) { 'http://www.digitalocean.com' }
 
-        it "should raise" do
+        it "should raise NoMethodError" do
           expect{ UrlHelper.is_uri_same_domain?(host, uri) }.to raise_error(NoMethodError)
         end
       end
@@ -77,7 +77,7 @@ module SiteMapper
       context "when called with URI objects of the same domain" do
         let(:host) { Addressable::URI.parse('http://digitalocean.com/').normalize }
         let(:uri) { Addressable::URI.parse('http://digitalocean.com').normalize }
-        
+
         it "should return true" do
           UrlHelper.is_uri_same_domain?(host, uri).should be true
         end

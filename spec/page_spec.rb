@@ -20,12 +20,16 @@ module SiteMapper
       let(:page) do
         p = Page.new('http://www.nisdom.com/')
         p.sub_pages << Page.new('http://www.nisdom.com/1')
-        p.sub_pages << Page.new('http://www.nisdom.com/2')
+        p.sub_pages << (
+          pp = Page.new('http://www.nisdom.com/2')
+          pp.sub_pages << Page.new('http://www.nisdom.com/3')
+          pp
+        )
         p
       end
 
       it "should return true" do
-        page.count.should eq 3
+        page.count.should eq 4
       end
     end
   end
