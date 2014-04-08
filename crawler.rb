@@ -12,7 +12,7 @@ module SiteMapper
     attr_reader :seen_pages
 
     EXTRACT_TAGS = [
-        ['//a/@href', 'sub_pages'],
+        ['//a/@href', 'anchors'],
         ['//img/@src', 'images'],
         ['//link/@href', 'links'],
         ['//script/@src', 'scripts']
@@ -56,14 +56,19 @@ module SiteMapper
       # check if we're allowed to crawl initial resource
       return nil unless should_crawl?(host, host, 0)
 
-      return recursive_crawl(host, host)
+      return crawl(host, host)
     end
 
     private
 
-    def recursive_crawl host, uri, depth=0
+    def crawl host, uri, depth=0
       page = create_page(host, uri, depth)
       return nil unless page
+
+      if LOGGER.info?
+        details = page.scraped? ? ": a(#{page.anchors.count}), img(#{page.images.count}), link(#{page.links.count}), script(#{page.scripts.count})" : ""
+        LOGGER.info "#{prefix(depth)} created at #{page.path}#{details}"
+      end
 
       depth += 1
       if depth >= @opts[:max_page_depth].to_i
@@ -71,11 +76,9 @@ module SiteMapper
         return page
       end
 
-      page.sub_pages.each_with_index do |sub_page_uri, i|
-        if sub_page = recursive_crawl(host, sub_page_uri, depth)
-          # Replace subpages links with real Page object instances.
-          page.sub_pages[i] = sub_page
-        end
+      page.anchors.each do |a|
+        sub_page = crawl(host, a, depth)
+        page.sub_pages << sub_page if sub_page
       end
 
       return page
@@ -85,34 +88,43 @@ module SiteMapper
       # verify uri
       normalized_uri = UrlHelper.get_normalized_uri(host, uri)
       return nil unless normalized_uri
-      return nil unless should_crawl?(host, normalized_uri, depth)
+      
+      # create page object
+      page = Page.new(normalized_uri)
+
+      # check if we should crawl it
+      return page unless should_crawl?(host, normalized_uri, depth)
 
       # get page content along with any redirect url
       r = get_http_response(normalized_uri)
       if r.nil? || r[:body].nil?
         LOGGER.error "failed to get HTML from url #{normalized_uri}"
-        return nil
+        return page
       end
 
-      # If we had redirect, verify url once more.
+      # if we had redirect, verify url once more
       if r[:redirect_count].to_i > 0
         normalized_uri = UrlHelper.get_normalized_uri(host, r[:effective_url])
-        return nil if normalized_uri.nil? || !should_crawl?(host, normalized_uri, depth)
+        return page unless normalized_uri
+
+        # modify path to match redirect
+        page.path = normalized_uri
+
+        # check if we should crawl it
+        return page unless should_crawl?(host, normalized_uri, depth)
       end
 
       doc = Nokogiri::HTML(r[:body])
       unless doc
         LOGGER.error "failed to parse document from url #{normalized_uri}"
-        return nil
+        return page
       end
 
-      page = Page.new(normalized_uri)
       EXTRACT_TAGS.each do |expression, collection|
         doc.xpath(expression).each { |attr| page.send(collection) << attr.value }
         page.instance_variable_set("@#{collection}", page.send(collection).reject(&:empty?).uniq)
       end
-
-      LOGGER.info "#{prefix(depth)} created at #{normalized_uri}: a(#{page.sub_pages.count}), img(#{page.images.count}), link(#{page.links.count}), script(#{page.scripts.count})"
+      page.scraped = true
 
       # Store page's url to a cache to avoid crawler endless loops. This cache will also serve for fast page nodes tree traversal.
       seen_pages[Digest::MurmurHash64B.hexdigest(normalized_uri.to_s)] = page

@@ -7,6 +7,7 @@ require_relative 'config/init_logger'
 require_relative 'version'
 require_relative 'crawler'
 require_relative 'url_helper'
+require_relative 'report_generator'
 
 module SiteMapper
   class Cli
@@ -20,6 +21,8 @@ module SiteMapper
       @options.ignore_robots = SETTINGS[:ignore_robots]
       @options.max_page_depth = SETTINGS[:max_page_depth]
       @options.log_level = SETTINGS[:log_level]
+      @options.report_type = SETTINGS[:report_type]
+      @options.frequency_type = SETTINGS[:frequency_type]
 
       @opt_parser = OptionParser.new do |opts|
         opts.banner = 'Generate sitemap.xml for a given uri.'
@@ -41,12 +44,22 @@ module SiteMapper
           @options.log_level = LOGGER.level = level.to_i
         end
 
-        opts.on('-d', '--depth DEPTH', 'Sets maximum page traversal depth, greater than 0') do |depth|
+        opts.on('-d', '--depth DEPTH', 'Sets maximum page traversal depth, should be greater than 0') do |depth|
           if depth.to_i < 1
             @out.puts opts if @out
             exit
           end
           @options.max_page_depth = depth.to_i
+        end
+
+        report_types = [:text, :sitemap, :html]
+        opts.on('-r', '--report-type TYPE', report_types, "Select report type (#{report_types.join(',')})") do |type|
+          @options.report_type = type
+        end
+
+        change_frequency = [:none, :always, :hourly, :daily, :weekly, :monthly, :yearly, :never]
+        opts.on('--change-frequency FREQ', change_frequency, "Select pages change frequency for sitemap report (#{change_frequency.join(',')})") do |freq|
+          @options.frequency_type = freq
         end
 
         opts.separator ''
@@ -81,7 +94,11 @@ module SiteMapper
         end
 
         tree = Crawler.new(@out, @options).start(normalized_host)
-        @out.puts tree if @out && tree
+        return unless tree
+
+        LOGGER.info "found #{tree.count} pages"
+
+        @out.puts ReportGenerator.new(@options).send("to_#{@options.report_type}", tree) if @out
       rescue OptionParser::InvalidArgument, OptionParser::InvalidOption, OptionParser::MissingArgument =>e
         @out.puts e if @out
         @out.puts @opt_parser if @out

@@ -54,8 +54,8 @@ module SiteMapper
           @crawler.stub(:get_http_response).with(URI('http://www.nisdom.com/robots.txt')).and_return(body: @robots[:robots_disallow_specific], code: 200)
         end
 
-        it "should return tree with a single node" do
-          @crawler.start(URI('http://www.nisdom.com/')).count.should eq 1
+        it "should return tree with two nodes" do
+          @crawler.start(URI('http://www.nisdom.com/')).count.should eq 2
         end
       end
 

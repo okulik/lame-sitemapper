@@ -6,3 +6,5 @@ web_settings:
   ssl_verifypeer: false
   ssl_verifyhost: 2
   useragent: sitemapper v0.0.0.1
+report_type: text
+frequency_type: daily
