@@ -19,6 +19,18 @@ EOS
   <changefreq>%s</changefreq>
 </url>
 EOS
+    HTML_PROLOG = <<-EOS
+<html>
+  <head>
+    <title>%s sitemap</title>
+  </head>
+  <body>
+    <h1>Site %s</h1>
+EOS
+    HTML_EPILOG = <<-EOS
+</body>
+</html>
+EOS
 
     def initialize options
       @options = options
@@ -41,6 +53,34 @@ EOS
       end
       out << XML_EPILOG
       return out
+    end
+
+    def to_html(page)
+      out = HTML_PROLOG % [ page.path, page.path ]
+      page.each do |p|
+        out << "<h2>Page <a href=\"#{p.path}\">#{p.path}</a></h2>"
+        if p.scraped?
+          out << "<h3>Images</h3>" if p.images.count > 0
+          p.images.each do |img|
+            out << "<div>"
+            out << "<a href=\"#{img}\">#{img}</a>"
+            out << "</div>"
+          end
+          out << "<h3>Links</h3>" if p.links.count > 0
+          p.links.each do |link|
+            out << "<div>"
+            out << "<p>#{link}</p>"
+            out << "</div>"
+          end
+          out << "<h3>Scripts</h3>" if p.scripts.count > 0
+          p.scripts.each do |script|
+            out << "<div>"
+            out << "<p>#{script}</p>"
+            out << "</div>"
+          end
+        end
+      end
+      out << HTML_EPILOG
     end
 
     private

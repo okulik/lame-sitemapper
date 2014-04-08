@@ -87,18 +87,17 @@ module SiteMapper
 
         host = @args.shift
         normalized_host = UrlHelper::get_normalized_host(host)
-
         unless normalized_host
           @out.puts @opt_parser if @out
           exit
         end
 
-        pages = Crawler.new(@out, @options).start(normalized_host)
-        return unless pages
+        root = Crawler.new(@out, @options).start(normalized_host)
+        return unless root
 
-        LOGGER.info "found #{pages.count} pages"
+        LOGGER.info "found #{root.count} pages"
 
-        @out.puts ReportGenerator.new(@options).send("to_#{@options.report_type}", pages) if @out
+        @out.puts ReportGenerator.new(@options).send("to_#{@options.report_type}", root) if @out
       rescue OptionParser::InvalidArgument, OptionParser::InvalidOption, OptionParser::MissingArgument =>e
         @out.puts e if @out
         @out.puts @opt_parser if @out
