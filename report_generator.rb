@@ -63,21 +63,21 @@ EOS
         if p.scraped?
           out << "<h3>Images</h3>\n" if p.images.count > 0
           p.images.each do |img|
-            uri = UrlHelper.get_normalized_uri(@host, img)
+            uri = UrlHelper.get_normalized_url(@host, img)
             out << "<div>\n"
             out << "<a href=\"#{uri}\">#{uri}</a>\n"
             out << "</div>\n"
           end
           out << "<h3>Links</h3>\n" if p.links.count > 0
           p.links.each do |link|
-            uri = UrlHelper.get_normalized_uri(@host, link)
+            uri = UrlHelper.get_normalized_url(@host, link)
             out << "<div>\n"
             out << "<p>#{uri}</p>\n"
             out << "</div>\n"
           end
           out << "<h3>Scripts</h3>\n" if p.scripts.count > 0
           p.scripts.each do |script|
-            uri = UrlHelper.get_normalized_uri(@host, script)
+            uri = UrlHelper.get_normalized_url(@host, script)
             out << "<div>\n"
             out << "<p>#{uri}</p>\n"
             out << "</div>\n"

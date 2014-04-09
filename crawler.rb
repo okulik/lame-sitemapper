@@ -2,7 +2,6 @@ require "typhoeus"
 require "digest/murmurhash"
 require "webrobots"
 require "addressable/uri"
-require "uri"
 
 require_relative "page"
 require_relative "url_helper"
@@ -25,39 +24,47 @@ module SiteMapper
       @seen_pages = {}
     end
 
-    def get_http_response(uri, method=:get)
-      response = Typhoeus.send(method, uri.to_s, SETTINGS[:web_settings])
+    def get_http_response(url, method=:get)
+      response = Typhoeus.send(method, url.to_s, SETTINGS[:web_settings])
       return nil unless response
+      if response.timed_out?
+        LOGGER.warn "resource at #{url} not accessible" 
+        return nil
+      end
       return { body: response.body, code: response.code, effective_url: response.effective_url, redirect_count: response.redirect_count }
     end
 
-    def start(host)
+    def start(host, start_url)
       unless @opts.skip_robots
         @robots = WebRobots.new(SETTINGS[:web_settings][:useragent], {
           crawl_delay: :sleep,
-          :http_get => lambda do |uri|
-            r = get_http_response(uri)
+          :http_get => lambda do |url|
+            r = get_http_response(url)
             return nil unless r && r[:code] >= 200 && r[:code] < 300 && r[:body]
             return r[:body].force_encoding("UTF-8")
           end
         })
         if error = @robots.error(host)
-          LOGGER.fatal "unable to retrieve robots.txt, error #{error.inspect}"
+          LOGGER.fatal "unable to retrieve robots.txt, exiting (error #{error.inspect})"
           exit 1
         end
       end
 
-      # check if our host redirects to somewhere else, if it does, change host to redirect url
-      r = get_http_response(host, :head)
-      host = UrlHelper.get_normalized_host(r[:effective_url]) if r && r[:redirect_count].to_i > 0
+      # check if our host redirects to somewhere else, if it does, change start_url to redirect url
+      r = get_http_response(start_url, :head)
+      unless r
+        LOGGER.fatal "unable to fetch starting url, exiting"
+        exit 2
+      end
+      start_url = UrlHelper.get_normalized_url(host, r[:effective_url]) if r && r[:redirect_count].to_i > 0
 
-      return [crawl(host, host), host]
+      return [crawl(host, start_url), start_url]
     end
 
     private
 
-    def crawl(host, uri, depth=0)
-      page = create_page(host, uri, depth)
+    def crawl(host, url, depth=0)
+      page = create_page(host, url, depth)
       return nil unless page
 
       if LOGGER.info?
@@ -77,35 +84,35 @@ module SiteMapper
       return page
     end
 
-    def create_page(host, uri, depth)
-      normalized_uri = UrlHelper.get_normalized_uri(host, uri)
-      return nil unless normalized_uri
+    def create_page(host, url, depth)
+      normalized_url = UrlHelper.get_normalized_url(host, url)
+      return nil unless normalized_url
       
-      return nil if already_seen?(normalized_uri, depth)
-      page = Page.new(normalized_uri)
-      seen_pages[Digest::MurmurHash64B.hexdigest(normalized_uri.to_s)] = page
+      return nil if already_seen?(normalized_url, depth)
+      page = Page.new(normalized_url)
+      seen_pages[Digest::MurmurHash64B.hexdigest(normalized_url.to_s)] = page
       return page unless should_crawl?(host, page, depth)
 
-      r = get_http_response(normalized_uri)
+      r = get_http_response(normalized_url)
       if r.nil? || r[:body].nil?
-        LOGGER.error "failed to get HTML from url #{normalized_uri}"
+        LOGGER.error "failed to get HTML from url #{normalized_url}"
         return nil
       end
 
       # if we had redirect, verify url once more
       if r[:redirect_count].to_i > 0
-        normalized_uri = UrlHelper.get_normalized_uri(host, r[:effective_url])
-        return page unless normalized_uri
+        normalized_url = UrlHelper.get_normalized_url(host, r[:effective_url])
+        return page unless normalized_url
 
-        page.path = normalized_uri # modify path to match redirect
-        return nil if already_seen?(normalized_uri, depth)
-        seen_pages[Digest::MurmurHash64B.hexdigest(normalized_uri.to_s)] = page
+        page.path = normalized_url # modify path to match redirect
+        return nil if already_seen?(normalized_url, depth)
+        seen_pages[Digest::MurmurHash64B.hexdigest(normalized_url.to_s)] = page
         return page unless should_crawl?(host, page, depth)
       end
 
       doc = Nokogiri::HTML(r[:body])
       unless doc
-        LOGGER.error "failed to parse document from url #{normalized_uri}"
+        LOGGER.error "failed to parse document from url #{normalized_url}"
         return page
       end
 
@@ -117,9 +124,9 @@ module SiteMapper
       return page
     end
 
-    def already_seen?(uri, depth)
-      if seen_pages[Digest::MurmurHash64B.hexdigest(uri.to_s)]
-        LOGGER.debug "#{prefix(depth)} skipping #{uri}, already seen"
+    def already_seen?(url, depth)
+      if seen_pages[Digest::MurmurHash64B.hexdigest(url.to_s)]
+        LOGGER.debug "#{prefix(depth)} skipping #{url}, already seen"
         return true
       end
 
@@ -129,14 +136,14 @@ module SiteMapper
     def should_crawl?(host, page, depth)
       page.non_scraped_code = 0
 
-      # check if uri is on the same domain as host
-      unless UrlHelper.is_uri_same_domain?(host, page.path)
+      # check if url is on the same domain as host
+      unless UrlHelper.is_url_same_domain?(host, page.path)
         LOGGER.debug "#{prefix(depth)} skipping #{page.path}, ext host"
         page.non_scraped_code |= Page::NON_SCRAPED_DOMAIN
         return false
       end
 
-      # check if uri is allowed with robots.txt
+      # check if url is allowed with robots.txt
       if @robots && @robots.disallowed?(page.path.to_s)
         LOGGER.debug "#{prefix(depth)} skipping #{page.path}, robots.txt disallowed"
         page.non_scraped_code |= Page::NON_SCRAPED_ROBOTS
