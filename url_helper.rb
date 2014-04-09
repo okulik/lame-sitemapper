@@ -15,7 +15,7 @@ module SiteMapper
       host_url.omit!(:path, :query, :fragment)
 
       return Addressable::URI.encode(host_url, ::Addressable::URI).normalize
-    rescue Addressable::URI::InvalidURIError, Addressable::URI::TypeError
+    rescue Addressable::URI::InvalidURIError, TypeError
       nil
     end
 
@@ -36,7 +36,7 @@ module SiteMapper
       resource_url.query = resource_url.query.split("&").map(&:strip).sort.join("&") unless resource_url.query.nil? || resource_url.query.empty?
 
       return Addressable::URI.encode(resource_url, ::Addressable::URI).normalize
-    rescue Addressable::URI::InvalidURIError, Addressable::URI::TypeError
+    rescue Addressable::URI::InvalidURIError, TypeError
       nil
     end
 

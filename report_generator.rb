@@ -157,11 +157,11 @@ EOS
     def tree_to_test_yml(page, out)
       if page.scraped?
         out << "\"#{page.path}\": \"\n"
-        out << "<html>\n"
+        out << "<html><body>\n"
         page.sub_pages.each do |p|
           out << "  <a href=\\\"#{p.path}\\\"></a>\n"
         end
-        out << "</html>\"\n"
+        out << "</body></html>\"\n"
         page.sub_pages.each do |p|
           tree_to_test_yml(p, out)
         end

@@ -96,11 +96,11 @@ module SiteMapper
       r = get_http_response(normalized_url)
       
       if r.nil? || r[:body].nil?
-        LOGGER.error "failed to get HTML from url #{normalized_url}"
+        LOGGER.error "failed to get resource for #{normalized_url}"
         return nil
       end
 
-      if r[:headers] && r[:headers]["Content-Type"] !~ /text\/html/
+      if r[:headers]["Content-Type"] !~ /text\/html/
         LOGGER.debug "#{prefix(depth)} stopping, #{page.path} is not html"
         page.no_html = true
         return page
