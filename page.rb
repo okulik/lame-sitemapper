@@ -6,7 +6,6 @@ module SiteMapper
     attr_reader :images
     attr_reader :links
     attr_reader :scripts
-    attr_accessor :non_scraped_code
 
     NON_SCRAPED_DEPTH = 1
     NON_SCRAPED_DOMAIN = 2
@@ -35,11 +34,47 @@ module SiteMapper
       @non_scraped_code == 0
     end
 
+    def robots_forbidden?
+      @non_scraped_code & Page::NON_SCRAPED_ROBOTS > 0
+    end
+
+    def robots_forbidden=(value)
+      if value
+        @non_scraped_code |= Page::NON_SCRAPED_ROBOTS
+      else
+        @non_scraped_code &= ~Page::NON_SCRAPED_ROBOTS
+      end
+    end
+
+    def external_domain?
+      @non_scraped_code & Page::NON_SCRAPED_DOMAIN > 0
+    end
+
+    def external_domain=(value)
+      if value
+        @non_scraped_code |= Page::NON_SCRAPED_DOMAIN
+      else
+        @non_scraped_code &= ~Page::NON_SCRAPED_DOMAIN
+      end
+    end
+
+    def depth_reached?
+      @non_scraped_code & Page::NON_SCRAPED_DEPTH > 0
+    end
+
+    def depth_reached=(value)
+      if value
+        @non_scraped_code |= Page::NON_SCRAPED_DEPTH
+      else
+        @non_scraped_code &= ~Page::NON_SCRAPED_DEPTH
+      end
+    end
+
     def format_codes
       reasons = []
-      reasons << "depth" if (@non_scraped_code & Page::NON_SCRAPED_DEPTH) > 0
-      reasons << "robots" if (@non_scraped_code & Page::NON_SCRAPED_ROBOTS) > 0
-      reasons << "ext" if (@non_scraped_code & Page::NON_SCRAPED_DOMAIN) > 0
+      reasons << "depth" if depth_reached?
+      reasons << "robots" if robots_forbidden?
+      reasons << "ext" if external_domain?
       return "#{reasons.join('|')} "
     end
 

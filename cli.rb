@@ -52,7 +52,7 @@ module SiteMapper
           @options.max_page_depth = depth.to_i
         end
 
-        report_types = [:text, :sitemap, :html]
+        report_types = [:text, :sitemap, :html, :graph]
         opts.on("-r", "--report-type TYPE", report_types, "Select report type (#{report_types.join(", ")})") do |type|
           @options.report_type = type
         end

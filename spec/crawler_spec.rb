@@ -35,8 +35,8 @@ module SiteMapper
           @root = @crawler.start(@host, @start_url).first
         end
 
-        it "should return a root node with NON_SCRAPED_ROBOTS reason" do
-          @root.non_scraped_code.should eq Page::NON_SCRAPED_ROBOTS
+        it "should return robots_forbidden? true" do
+          @root.robots_forbidden?.should be_true
         end
       end
 
@@ -64,7 +64,7 @@ module SiteMapper
           @root.count.should eq 2
           @root.scraped?.should be_true
           @root.sub_pages[0].scraped?.should be_false
-          @root.sub_pages[0].non_scraped_code.should eq Page::NON_SCRAPED_ROBOTS
+          @root.sub_pages[0].robots_forbidden?.should be_true
         end
       end
 

@@ -134,26 +134,24 @@ module SiteMapper
     end
 
     def should_crawl?(host, page, depth)
-      page.non_scraped_code = 0
-
       # check if url is on the same domain as host
       unless UrlHelper.is_url_same_domain?(host, page.path)
         LOGGER.debug "#{prefix(depth)} skipping #{page.path}, ext host"
-        page.non_scraped_code |= Page::NON_SCRAPED_DOMAIN
+        page.external_domain = true
         return false
       end
 
       # check if url is allowed with robots.txt
       if @robots && @robots.disallowed?(page.path.to_s)
         LOGGER.debug "#{prefix(depth)} skipping #{page.path}, robots.txt disallowed"
-        page.non_scraped_code |= Page::NON_SCRAPED_ROBOTS
+        page.robots_forbidden = true
         return false
       end
 
       # check if max traversal depth has been reached
       if depth >= @opts[:max_page_depth].to_i
         LOGGER.debug "#{prefix(depth)} max traversal depth reached"
-        page.non_scraped_code |= Page::NON_SCRAPED_DEPTH
+        page.depth_reached = true
         return false
       end
 

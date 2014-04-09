@@ -1,3 +1,4 @@
+require "graphviz"
 require_relative "page"
 
 module SiteMapper
@@ -85,9 +86,35 @@ EOS
         end
       end
       out << HTML_EPILOG
+      return out
+    end
+
+    def to_graph(root)
+      graph = Graphviz::Graph.new
+      tree_to_graph(root, graph)
+      return graph.to_dot
     end
 
     private
+
+    def tree_to_graph(page, node)
+      n = node.add_node(page.path.to_s)
+      unless page.scraped?
+        n.attributes[:shape] = 'box' 
+        n.attributes[:color] = (
+          if page.robots_forbidden?
+            'crimson'
+          elsif page.depth_reached?
+            'darkorange'
+          elsif page.external_domain?
+            'deeppink'
+          end
+        )
+      end
+      page.sub_pages.each do |p|
+        tree_to_graph(p, n)
+      end
+    end
 
     def tree_to_text(page, out, depth=0)
       indent = INDENT * 2 * depth

@@ -8,6 +8,7 @@ gem 'webrobots'
 gem 'addressable'
 gem 'public_suffix'
 gem 'digest-murmurhash'
+gem 'graphviz'
 
 gem 'pry'
 gem 'pry-doc'
