@@ -10,6 +10,7 @@ module SiteMapper
     NON_SCRAPED_DEPTH = 1
     NON_SCRAPED_DOMAIN = 2
     NON_SCRAPED_ROBOTS = 4
+    NON_SCRAPED_NO_HTML = 8
 
     def initialize(path)
       @path = path
@@ -70,11 +71,24 @@ module SiteMapper
       end
     end
 
+    def no_html?
+      @non_scraped_code & Page::NON_SCRAPED_NO_HTML > 0
+    end
+
+    def no_html=(value)
+      if value
+        @non_scraped_code |= Page::NON_SCRAPED_NO_HTML
+      else
+        @non_scraped_code &= ~Page::NON_SCRAPED_NO_HTML
+      end
+    end
+
     def format_codes
       reasons = []
       reasons << "depth" if depth_reached?
       reasons << "robots" if robots_forbidden?
       reasons << "ext" if external_domain?
+      reasons << "nohtml" if no_html?
       return "#{reasons.join('|')} "
     end
 

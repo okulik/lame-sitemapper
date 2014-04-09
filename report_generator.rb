@@ -89,10 +89,16 @@ EOS
       return out
     end
 
-    def to_graph(root)
+    def to_graph(page)
       graph = Graphviz::Graph.new
-      tree_to_graph(root, graph)
+      tree_to_graph(page, graph)
       return graph.to_dot
+    end
+
+    def to_test_yml(page)
+      out = ""
+      tree_to_test_yml(page, out)
+      return out
     end
 
     private
@@ -108,6 +114,8 @@ EOS
             'darkorange'
           elsif page.external_domain?
             'deeppink'
+          elsif page.no_html?
+            'blue'
           end
         )
       end
@@ -146,8 +154,22 @@ EOS
       end
     end
 
+    def tree_to_test_yml(page, out)
+      if page.scraped?
+        out << "\"#{page.path}\": \"\n"
+        out << "<html>\n"
+        page.sub_pages.each do |p|
+          out << "  <a href=\\\"#{p.path}\\\"></a>\n"
+        end
+        out << "</html>\"\n"
+        page.sub_pages.each do |p|
+          tree_to_test_yml(p, out)
+        end
+      end
+    end
+
     def scraped_mark(page)
-      page.scraped? ? "* " : ""
+      page.scraped? ? "* " : " "
     end
   end
 end

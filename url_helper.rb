@@ -5,7 +5,7 @@ module SiteMapper
   class UrlHelper
     SUPPORTED_SCHEMAS = %w(http https)
 
-    def self.get_normalized_host host_string
+    def self.get_normalized_host(host_string)
       host_url = Addressable::URI.heuristic_parse(host_string, scheme: "http")
       
       return nil unless SUPPORTED_SCHEMAS.include?(host_url.scheme)
@@ -19,7 +19,7 @@ module SiteMapper
       nil
     end
 
-    def self.get_normalized_url host_url, resource_url
+    def self.get_normalized_url(host_url, resource_url)
       host_url = Addressable::URI.parse(host_url)
       resource_url = Addressable::URI.parse(resource_url)
 
@@ -40,7 +40,7 @@ module SiteMapper
       nil
     end
 
-    def self.is_url_same_domain? host_url, resource_url
+    def self.is_url_same_domain?(host_url, resource_url)
       host_url = Addressable::URI.parse(host_url)
       resource_url = Addressable::URI.parse(resource_url)
       host_url.host == resource_url.host

@@ -13,7 +13,7 @@ module SiteMapper
   class Cli
     attr_reader :opt_parser
 
-    def initialize out = nil, args=[], run_file=File.basename(__FILE__)
+    def initialize(out = nil, args=[], run_file=File.basename(__FILE__))
       @out = out
       @args = args
       
@@ -52,7 +52,7 @@ module SiteMapper
           @options.max_page_depth = depth.to_i
         end
 
-        report_types = [:text, :sitemap, :html, :graph]
+        report_types = [:text, :sitemap, :html, :graph, :test_yml]
         opts.on("-r", "--report-type TYPE", report_types, "Select report type (#{report_types.join(", ")})") do |type|
           @options.report_type = type
         end

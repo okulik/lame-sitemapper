@@ -17,6 +17,7 @@ module SiteMapper
         page.robots_forbidden?.should be_false
         page.external_domain?.should be_false
         page.depth_reached?.should be_false
+        page.no_html?.should be_false
         page.path.should eq "http://www.nisdom.com/"
       end
     end
@@ -66,10 +67,13 @@ module SiteMapper
         
         page.robots_forbidden = true
         page.scraped?.should be_false
+
+        page.no_html = true
+        page.scraped?.should be_false
       end
 
       it "should return true" do
-        page.robots_forbidden = page.external_domain = page.depth_reached = false
+        page.robots_forbidden = page.external_domain = page.depth_reached = page.no_html = false
         page.scraped?.should be_true
       end
     end
@@ -92,6 +96,11 @@ module SiteMapper
         page.robots_forbidden?.should be_true
         page.robots_forbidden = false
         page.robots_forbidden?.should be_false
+
+        page.no_html = true
+        page.no_html?.should be_true
+        page.no_html = false
+        page.no_html?.should be_false
       end
     end
   end

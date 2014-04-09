@@ -10,6 +10,7 @@ module SiteMapper
   describe Crawler do
     before(:all) do
       @robots = YAML::load(IO.read(File.join(File.dirname(__FILE__), "fixtures/robots_fixtures.yml"))).symbolize
+      @htmls = YAML::load(IO.read(File.join(File.dirname(__FILE__), "fixtures/html_fixtures.yml"))).symbolize
       @out = StringIO.new
       @options = OpenStruct.new(skip_robots: false, max_page_depth: 10)
       @host = UrlHelper::get_normalized_host("http://www.nisdom.com")
@@ -20,7 +21,7 @@ module SiteMapper
       @crawler = Crawler.new(@out, @options)
     end
 
-    describe "test robots.txt stuff" do
+    describe "test only robots.txt stuff" do
       context "when robots.txt can't be found" do
         it "should exit with -1" do
           @crawler.stub(:get_http_response).with(URI("http://www.nisdom.com/robots.txt")).and_return(body: nil, code: 404)
@@ -98,6 +99,27 @@ module SiteMapper
           @root.sub_pages[0].scraped?.should be_true
         end
       end
+    end
+
+    describe "test with some pre-baked HTML, with and without robots.txt" do
+      # context "when robots.txt can't be found" do
+      #   it "should exit with -1" do
+      #     @crawler.stub(:get_http_response).with(URI("http://www.nisdom.com/robots.txt")).and_return(body: nil, code: 404)
+      #     lambda { @crawler.start(@host, @start_url) }.should exit_with_code(1)
+      #   end
+      # end
+
+      # context "when everything is disallowed" do
+      #   before(:each) do
+      #     @crawler.stub(:get_http_response).and_return(body: nil, code: 200)
+      #     @crawler.stub(:get_http_response).with(URI("http://www.nisdom.com/robots.txt")).and_return(body: @robots[:robots_disallow_all], code: 200)
+      #     @root = @crawler.start(@host, @start_url).first
+      #   end
+
+      #   it "should return robots_forbidden? true" do
+      #     @root.robots_forbidden?.should be_true
+      #   end
+      # end
     end
   end
 end

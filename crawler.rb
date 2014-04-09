@@ -31,7 +31,7 @@ module SiteMapper
         LOGGER.warn "resource at #{url} not accessible" 
         return nil
       end
-      return { body: response.body, code: response.code, effective_url: response.effective_url, redirect_count: response.redirect_count }
+      return { body: response.body, code: response.code, effective_url: response.effective_url, redirect_count: response.redirect_count, headers: response.headers }
     end
 
     def start(host, start_url)
@@ -94,9 +94,16 @@ module SiteMapper
       return page unless should_crawl?(host, page, depth)
 
       r = get_http_response(normalized_url)
+      
       if r.nil? || r[:body].nil?
         LOGGER.error "failed to get HTML from url #{normalized_url}"
         return nil
+      end
+
+      if r[:headers] && r[:headers]["Content-Type"] !~ /text\/html/
+        LOGGER.debug "#{prefix(depth)} stopping, #{page.path} is not html"
+        page.no_html = true
+        return page
       end
 
       # if we had redirect, verify url once more
@@ -136,21 +143,21 @@ module SiteMapper
     def should_crawl?(host, page, depth)
       # check if url is on the same domain as host
       unless UrlHelper.is_url_same_domain?(host, page.path)
-        LOGGER.debug "#{prefix(depth)} skipping #{page.path}, ext host"
+        LOGGER.debug "#{prefix(depth)} stopping, #{page.path} is ext host"
         page.external_domain = true
         return false
       end
 
       # check if url is allowed with robots.txt
       if @robots && @robots.disallowed?(page.path.to_s)
-        LOGGER.debug "#{prefix(depth)} skipping #{page.path}, robots.txt disallowed"
+        LOGGER.debug "#{prefix(depth)} stopping, #{page.path} is robots.txt disallowed"
         page.robots_forbidden = true
         return false
       end
 
       # check if max traversal depth has been reached
       if depth >= @opts[:max_page_depth].to_i
-        LOGGER.debug "#{prefix(depth)} max traversal depth reached"
+        LOGGER.debug "#{prefix(depth)} stopping, max traversal depth reached"
         page.depth_reached = true
         return false
       end
