@@ -1,6 +1,6 @@
 max_page_depth: 10
-log_level: 1
-ignore_robots: false
+log_level: 0
+skip_robots: false
 web_settings:
   followlocation: true
   ssl_verifypeer: false

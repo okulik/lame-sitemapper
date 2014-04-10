@@ -18,25 +18,25 @@ module SiteMapper
       @args = args
       
       @options = OpenStruct.new
-      @options.ignore_robots = SETTINGS[:ignore_robots]
+      @options.skip_robots = SETTINGS[:skip_robots]
       @options.max_page_depth = SETTINGS[:max_page_depth]
       @options.log_level = SETTINGS[:log_level]
       @options.report_type = SETTINGS[:report_type]
       @options.frequency_type = SETTINGS[:sitemap_frequency_type]
 
       @opt_parser = OptionParser.new do |opts|
-        opts.banner = "Generate sitemap.xml for a given uri."
+        opts.banner = "Generate sitemap.xml for a given url."
         opts.separator ""
         opts.separator "Usage: ruby #{run_file} [options] <uri>"
-        opts.separator "uri needs to be in the form of e.g. http://www.nisdom.com:80/"
+        opts.separator "url needs to be in the form of e.g. http://www.nisdom.com"
         opts.separator ""
         opts.separator "Specific options:"
 
         opts.on("-i", "--ignore-robots", "Do not follow advices from robots.txt") do
-          @options.ignore_robots = true
+          @options.skip_robots = true
         end
 
-        opts.on("-l", "--log-level LEVEL", "Set log level ranging from most verbose 0 (DEBUG) to 4 (FATAL)") do |level|
+        opts.on("-l", "--log-level LEVEL", "Set log level 0 to 4, 0 is most verbose, default is 1") do |level|
           if level.to_i < 0 || level.to_i > 4
             @out.puts opts if @out
             exit
@@ -44,7 +44,7 @@ module SiteMapper
           @options.log_level = LOGGER.level = level.to_i
         end
 
-        opts.on("-d", "--depth DEPTH", "Sets maximum page traversal depth [1..10]") do |depth|
+        opts.on("-d", "--depth DEPTH", "Sets maximum page traversal depth 1 to 10, default is 10") do |depth|
           if depth.to_i < 1 || depth.to_i > 10
             @out.puts opts if @out
             exit
@@ -53,12 +53,12 @@ module SiteMapper
         end
 
         report_types = [:text, :sitemap, :html, :graph, :test_yml]
-        opts.on("-r", "--report-type TYPE", report_types, "Select report type (#{report_types.join(", ")})") do |type|
+        opts.on("-r", "--report-type TYPE", report_types, "Select report type from #{report_types.map {|f| '\'' + f.to_s + '\''}.join(", ")}, defalut is 'text'") do |type|
           @options.report_type = type
         end
 
         change_frequency = [:none, :always, :hourly, :daily, :weekly, :monthly, :yearly, :never]
-        opts.on("--change-frequency FREQ", change_frequency, "Select pages change frequency for sitemap report (#{change_frequency.join(", ")})") do |freq|
+        opts.on("--change-frequency FREQ", change_frequency, "Select pages change frequency for sitemap report from #{change_frequency.map {|f| '\'' + f.to_s + '\''}.join(", ")}, default is 'daily'") do |freq|
           @options.frequency_type = freq
         end
 

@@ -66,7 +66,10 @@ module SiteMapper
         LOGGER.fatal "unable to fetch starting url, exiting"
         exit 2
       end
-      start_url = UrlHelper.get_normalized_url(host, response.effective_url) if response.redirect_count.to_i > 0
+      if response.redirect_count.to_i > 0
+        host = UrlHelper::get_normalized_host(response.effective_url) 
+        start_url = UrlHelper::get_normalized_url(host, response.effective_url)
+      end
 
       return [crawl(host, start_url), start_url]
     end
@@ -142,7 +145,7 @@ module SiteMapper
     end
 
     def is_url_already_seen?(url, depth)
-      if @seen_urls[Digest::MurmurHash64B.hexdigest(url.to_s)]
+      if @seen_urls[Digest::MurmurHash64B.hexdigest(url.omit(:scheme).to_s)]
         LOGGER.debug "#{log_prefix(depth)} skipping #{url}, already seen"
         return true
       end
@@ -151,7 +154,7 @@ module SiteMapper
     end
 
     def set_already_seen_url(url)
-      @seen_urls[Digest::MurmurHash64B.hexdigest(url.to_s)] = true
+      @seen_urls[Digest::MurmurHash64B.hexdigest(url.omit(:scheme).to_s)] = true
     end
 
     def should_crawl_page?(host, page, depth)
