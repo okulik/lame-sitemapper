@@ -1,19 +1,19 @@
-= SiteMapper
+# SiteMapper
 
 SiteMapper is a simple web crawler that can produce information about a domain and pages it visits. It can produce reports in many interesting formats like sitemap.xml, dot (graphviz compatible), text or html.
 
 See [http://github.com/okulik/sitemapper/][github-sitemapper] for more information.
 
-== Features
+## Features
 * Obeys robots.txt (optional).
 * Produces 4 different types of report i.e. 'text', 'sitemap', 'html', 'graph' and 'test_yml'.
 * Tracks HTTP redirects.
 * Possibility to choose number of concurrent threads.
 
-== Installation
+## Installation
 Run bundler install in the download folder.
 
-== Requirements
+## Requirements
 * typhoeus
 * nokogiri
 * webrobots
@@ -26,12 +26,12 @@ Run bundler install in the download folder.
 * pry-debugger
 * rspec
 
-== Examples
-crawl up to depth 3 of page links, use 6 threads, disregard robots.txt and create a hierarchical text report
+## Examples
+crawl up to depth 3 of page links, use 6 threads, disregard robots.txt and create a hierarchical text report  
 `ruby site_mapper.rb "http://www.some.site.mom" -l 0 -d 3 -t 6 --norobots`
 
-crawl up to depth 3 of page links, use 6 threads, disregard robots.txt, create dot file, convert it to png file and open it (you need to have installed [graphviz][graphviz])
+crawl up to depth 3 of page links, use 6 threads, disregard robots.txt, create dot file, convert it to png file and open it (you need to have installed [graphviz][graphviz])  
 `ruby site_mapper.rb "http://www.some.site.mom" -l 0 -d 4 -t 6 --norobots -r graph > site.dot && dot -Tpng site.dot > site.png && open site.png`
 
-[graphviz] http://www.graphviz.org/ "Graphviz - Graph Visualization Software"
-[github-sitemapper] http://github.com/okulik/sitemapper/ "Sitemapper"
+[graphviz]: http://www.graphviz.org/
+[github-sitemapper]: http://github.com/okulik/sitemapper/
