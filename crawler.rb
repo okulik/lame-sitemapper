@@ -89,8 +89,8 @@ module SiteMapper
         LOGGER.info "#{log_prefix(depth)} created at #{page.path}#{details}"
       end
 
-      page.anchors.each do |a|
-        sub_page = crawl(host, a, depth + 1)
+      page.anchors.each do |anchor|
+        sub_page = crawl(host, anchor, depth + 1)
         page.sub_pages << sub_page if sub_page
       end
 
