@@ -4,6 +4,9 @@ robots_disallow_all: |
 robots_allow_all: |
   User-agent: *
   Alow: /
-robots_disallow_specific: |
+robots_disallow_secret: |
   User-agent: *
   Disallow: /secret
+robots_disallow_tag: |
+  User-agent: *
+  Disallow: /tag

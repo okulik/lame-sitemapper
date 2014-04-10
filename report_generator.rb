@@ -116,6 +116,8 @@ EOS
             'deeppink'
           elsif page.no_html?
             'blue'
+          elsif page.not_accessible?
+            'blueviolet'
           end
         )
       end

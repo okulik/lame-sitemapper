@@ -18,6 +18,7 @@ module SiteMapper
         page.external_domain?.should be_false
         page.depth_reached?.should be_false
         page.no_html?.should be_false
+        page.not_accessible?.should be_false
         page.path.should eq "http://www.nisdom.com/"
       end
     end
@@ -70,6 +71,9 @@ module SiteMapper
 
         page.no_html = true
         page.scraped?.should be_false
+
+        page.not_accessible = true
+        page.scraped?.should be_false
       end
 
       it "should return true" do
@@ -81,7 +85,7 @@ module SiteMapper
     context "bitfield backed getters and setters" do
       let(:page) { Page.new("http://www.nisdom.com/") }
 
-      it "should return true whenever getter is matched to previously called setetr" do
+      it "should return true whenever getter is matched to previously called setter" do
         page.depth_reached = true
         page.depth_reached?.should be_true
         page.depth_reached = false
@@ -101,6 +105,11 @@ module SiteMapper
         page.no_html?.should be_true
         page.no_html = false
         page.no_html?.should be_false
+
+        page.not_accessible = true
+        page.not_accessible?.should be_true
+        page.not_accessible = false
+        page.not_accessible?.should be_false
       end
     end
   end

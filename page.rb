@@ -11,6 +11,7 @@ module SiteMapper
     NON_SCRAPED_DOMAIN = 2
     NON_SCRAPED_ROBOTS = 4
     NON_SCRAPED_NO_HTML = 8
+    NON_SCRAPED_NOT_ACCESSIBLE = 16
 
     def initialize(path)
       @path = path
@@ -83,12 +84,25 @@ module SiteMapper
       end
     end
 
+    def not_accessible?
+      @non_scraped_code & Page::NON_SCRAPED_NOT_ACCESSIBLE > 0
+    end
+
+    def not_accessible=(value)
+      if value
+        @non_scraped_code |= Page::NON_SCRAPED_NOT_ACCESSIBLE
+      else
+        @non_scraped_code &= ~Page::NON_SCRAPED_NOT_ACCESSIBLE
+      end
+    end
+
     def format_codes
       reasons = []
       reasons << "depth" if depth_reached?
       reasons << "robots" if robots_forbidden?
       reasons << "ext" if external_domain?
       reasons << "nohtml" if no_html?
+      reasons << "noacc" if not_accessible?
       return "#{reasons.join('|')} "
     end
 
