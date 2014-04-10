@@ -1,5 +1,4 @@
 require "spec_helper"
-require_relative "../cli"
 
 module SiteMapper
   describe Cli do

@@ -4,6 +4,7 @@ require "public_suffix"
 module SiteMapper
   class UrlHelper
     SUPPORTED_SCHEMAS = %w(http https)
+    LOG_INDENT = " " * 2
 
     def self.get_normalized_host(host_string)
       host_url = Addressable::URI.heuristic_parse(host_string, scheme: "http")
@@ -44,6 +45,10 @@ module SiteMapper
       host_url = Addressable::URI.parse(host_url)
       resource_url = Addressable::URI.parse(resource_url)
       host_url.host == resource_url.host
+    end
+
+    def self.log_prefix(depth)
+      "#{LOG_INDENT * depth}(#{depth})"
     end
   end
 end

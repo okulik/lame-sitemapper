@@ -1,5 +1,4 @@
 require "spec_helper"
-require_relative "../url_helper"
 
 module SiteMapper
   describe UrlHelper do

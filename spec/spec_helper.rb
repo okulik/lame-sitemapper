@@ -1,3 +1,15 @@
+require "yaml"
+require "ostruct"
+require "spec_helper"
+require "typhoeus"
+require_relative "../config/patch"
+require_relative "../config/init_settings"
+require_relative "../config/init_logger"
+require_relative "../cli"
+require_relative "../core"
+require_relative "../url_helper"
+require_relative "../page"
+
 RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true

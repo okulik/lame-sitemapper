@@ -5,7 +5,7 @@ require_relative "config/patch"
 require_relative "config/init_settings"
 require_relative "config/init_logger"
 require_relative "version"
-require_relative "crawler"
+require_relative "core"
 require_relative "url_helper"
 require_relative "report_generator"
 
@@ -18,11 +18,14 @@ module SiteMapper
       @args = args
       
       @options = OpenStruct.new
-      @options.skip_robots = SETTINGS[:skip_robots]
+      @options.use_robots = SETTINGS[:use_robots]
       @options.max_page_depth = SETTINGS[:max_page_depth]
-      @options.log_level = SETTINGS[:log_level]
+      @options.log_level = SETTINGS[:log_level].to_i
       @options.report_type = SETTINGS[:report_type]
       @options.frequency_type = SETTINGS[:sitemap_frequency_type]
+      @options.scraper_threads = SETTINGS[:scraper_threads].to_i
+
+      Thread.current[:name] = "**"
 
       @opt_parser = OptionParser.new do |opts|
         opts.banner = "Generate sitemap.xml for a given url."
@@ -32,19 +35,19 @@ module SiteMapper
         opts.separator ""
         opts.separator "Specific options:"
 
-        opts.on("-i", "--ignore-robots", "Do not follow advices from robots.txt") do
-          @options.skip_robots = true
+        opts.on("--[no-]robots", "Run with robots.txt") do |r|
+          @options.use_robots = r
         end
 
-        opts.on("-l", "--log-level LEVEL", "Set log level 0 to 4, 0 is most verbose, default is 1") do |level|
+        opts.on("-l", "--log-level LEVEL", "Set log level from 0 to 4, 0 is most verbose (default 1)") do |level|
           if level.to_i < 0 || level.to_i > 4
             @out.puts opts if @out
             exit
           end
-          @options.log_level = LOGGER.level = level.to_i
+          LOGGER.level = level.to_i
         end
 
-        opts.on("-d", "--depth DEPTH", "Sets maximum page traversal depth 1 to 10, default is 10") do |depth|
+        opts.on("-d", "--depth DEPTH", "Set maximum page traversal depth from 1 to 10 (default 10)") do |depth|
           if depth.to_i < 1 || depth.to_i > 10
             @out.puts opts if @out
             exit
@@ -53,13 +56,21 @@ module SiteMapper
         end
 
         report_types = [:text, :sitemap, :html, :graph, :test_yml]
-        opts.on("-r", "--report-type TYPE", report_types, "Select report type from #{report_types.map {|f| '\'' + f.to_s + '\''}.join(", ")}, defalut is 'text'") do |type|
+        opts.on("-r", "--report-type TYPE", report_types, "Set report type #{report_types.map {|f| '\'' + f.to_s + '\''}.join(", ")} (defalut 'text')") do |type|
           @options.report_type = type
         end
 
         change_frequency = [:none, :always, :hourly, :daily, :weekly, :monthly, :yearly, :never]
-        opts.on("--change-frequency FREQ", change_frequency, "Select pages change frequency for sitemap report from #{change_frequency.map {|f| '\'' + f.to_s + '\''}.join(", ")}, default is 'daily'") do |freq|
+        opts.on("--change-frequency FREQ", change_frequency, "Set sitemap's page change frequency #{change_frequency.map {|f| '\'' + f.to_s + '\''}.join(", ")} (default 'daily')") do |freq|
           @options.frequency_type = freq
+        end
+
+        opts.on("-t", "--scraper-threads NUM", "Set number of scraper threads from 1 to 10 (default 1)") do |num|
+          if num.to_i < 1 || num.to_i > 10
+            @out.puts opts if @out
+            exit
+          end
+          @options.scraper_threads = num.to_i
         end
 
         opts.separator ""
@@ -94,11 +105,12 @@ module SiteMapper
         end
 
         LOGGER.info "starting with #{normalized_start_url}, options #{@options.inspect}"
-
-        root, normalized_start_url = Crawler.new(@out, @options).start(normalized_host, normalized_start_url)
+        
+        start_time = Time.now
+        root, normalized_start_url = Core.new(@out, @options).start(normalized_host, normalized_start_url)
         return unless root
 
-        LOGGER.info "found #{root.count} pages"
+        LOGGER.info "found #{root.count} pages in #{Time.now - start_time}s"
 
         @out.puts ReportGenerator.new(@options, normalized_start_url).send("to_#{@options.report_type}", root) if @out
       rescue OptionParser::InvalidArgument, OptionParser::InvalidOption, OptionParser::MissingArgument =>e
