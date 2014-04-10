@@ -11,7 +11,8 @@ See [http://github.com/okulik/sitemapper/][github-sitemapper] for more informati
 * Possibility to choose number of concurrent threads.
 
 ## Installation
-Run bundler install in the download folder.
+Go to download folder and run from console (make sure you have [bunder][bundler]):  
+`bundler install`
 
 ## Requirements
 * typhoeus
@@ -38,3 +39,4 @@ traverse up to level 2, obey robots.txt and create an html report
 
 [graphviz]: http://www.graphviz.org/
 [github-sitemapper]: http://github.com/okulik/sitemapper/
+[bundler]: http://bundler.io/
