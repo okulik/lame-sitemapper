@@ -11,7 +11,7 @@ See [http://github.com/okulik/sitemapper/][github-sitemapper] for more informati
 * Possibility to choose number of concurrent threads.
 
 ## Installation
-Go to download folder and run from console (make sure you have [bunder][bundler]):  
+Go to download folder and run from console (make sure you have [bundler][bundler]):  
 `bundler install`
 
 ## Requirements
