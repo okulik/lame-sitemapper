@@ -4,7 +4,7 @@ SiteMapper is a simple, static web pages hierarchy explorer. It starts from the 
 
 The main challenge in web site links traversal is to know if some link has been previously seen and, accordingly, not to explore any further in that direction. This prevents infinite traversal of pages, jumping from link to link forever.
 
-See [http://www.nisdom.com/a-simple-ruby-sitemap-xml-generator/][nisdom-sitemapper] for more details.
+See [http://www.nisdom.com/blog/2014/04/12/a-simple-ruby-sitemap-dot-xml-generator/][nisdom-sitemapper] for more details.
 
 ## Features
 * Obeys robots.txt (can be optionally disregarded).
