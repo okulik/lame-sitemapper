@@ -50,4 +50,4 @@ ruby site_mapper.rb "http://www.some.site.mom" -d 2 -r html > site.html
 [graphviz]: http://www.graphviz.org/
 [github-sitemapper]: http://github.com/okulik/sitemapper/
 [bundler]: http://bundler.io/
-[nisdom-sitemapper]: http://www.nisdom.com/a-simple-ruby-sitemap-xml-generator/
+[nisdom-sitemapper]: http://www.nisdom.com/blog/2014/04/12/a-simple-ruby-sitemap-dot-xml-generator/
