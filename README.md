@@ -45,8 +45,6 @@ ruby site_mapper.rb "http://www.some.site.mom" -d 2 -r html > site.html
   && open site.html
 ```
 
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/080d96b2c1703beb76b392c4856b3760 "githalytics.com")](http://githalytics.com/okulik/sitemapper)
-
 [graphviz]: http://www.graphviz.org/
 [github-sitemapper]: http://github.com/okulik/sitemapper/
 [bundler]: http://bundler.io/
