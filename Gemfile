@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.1.1'
+ruby '2.5.1'
 
 gem 'typhoeus'
 gem 'nokogiri'
@@ -10,7 +10,9 @@ gem 'public_suffix'
 gem 'digest-murmurhash'
 gem 'graphviz'
 
-gem 'pry'
-gem 'pry-doc'
-gem 'pry-debugger'
-gem 'rspec'
+group :development, :test do
+	gem 'pry'
+	gem 'pry-doc'
+	gem 'pry-byebug'
+	gem 'rspec'
+end
