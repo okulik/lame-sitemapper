@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require "graphviz"
 require_relative "page"
 
-module SiteMapper
+module Sitemapper
   class ReportGenerator
     INDENT = " "
     XML_PROLOG = <<-EOS
@@ -39,13 +41,14 @@ EOS
     end
 
     def to_text(page)
-      out = ""
+      out = []
       tree_to_text(page, out)
-      return out
+      out.join
     end
 
     def to_sitemap(page)
-      out = XML_PROLOG
+      out = []
+      out << XML_PROLOG
       page.each do |p|
         if @options.frequency_type != :none
           out << XML_NODE_TEMPLATE2 % [ p.path, @options.frequency_type ]
@@ -54,11 +57,12 @@ EOS
         end
       end
       out << XML_EPILOG
-      return out
+      out.join
     end
 
     def to_html(page)
-      out = HTML_PROLOG % [ page.path, page.path ]
+      out = []
+      out << HTML_PROLOG % [ page.path, page.path ]
       page.each do |p|
         out << "<h2>#{scraped_mark(p)}#{p.format_codes}<a href=\"#{p.path}\">#{p.path}</a></h2>\n"
         if p.scraped?
@@ -86,19 +90,19 @@ EOS
         end
       end
       out << HTML_EPILOG
-      return out
+      out.join
     end
 
     def to_graph(page)
       graph = Graphviz::Graph.new
       tree_to_graph(page, graph)
-      return graph.to_dot
+      graph.to_dot
     end
 
     def to_test_yml(page)
-      out = ""
+      out = []
       tree_to_test_yml(page, out)
-      return out
+      out.join
     end
 
     private
@@ -106,18 +110,18 @@ EOS
     def tree_to_graph(page, node)
       n = node.add_node(page.path.to_s)
       unless page.scraped?
-        n.attributes[:shape] = 'box' 
+        n.attributes[:shape] = "box" 
         n.attributes[:color] = (
           if page.robots_forbidden?
-            'crimson'
+            "crimson"
           elsif page.depth_reached?
-            'darkorange'
+            "darkorange"
           elsif page.external_domain?
-            'deeppink'
+            "deeppink"
           elsif page.no_html?
-            'blue'
+            "blue"
           elsif page.not_accessible?
-            'blueviolet'
+            "blueviolet"
           end
         )
       end

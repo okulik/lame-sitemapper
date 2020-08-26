@@ -1,18 +1,16 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-ruby '2.5.1'
+gemspec
 
-gem 'typhoeus'
-gem 'nokogiri'
-gem 'webrobots'
-gem 'addressable'
-gem 'public_suffix'
-gem 'digest-murmurhash'
-gem 'graphviz'
+gem "typhoeus"
+gem "nokogiri"
+gem "webrobots"
+gem "addressable"
+gem "public_suffix"
+gem "digest-murmurhash"
+gem "graphviz"
+gem "activesupport"
 
 group :development, :test do
-	gem 'pry'
-	gem 'pry-doc'
-	gem 'pry-byebug'
-	gem 'rspec'
+  gem "rspec"
 end

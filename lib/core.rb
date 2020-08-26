@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "typhoeus"
 require "webrobots"
 require "addressable/uri"
@@ -7,7 +9,7 @@ require_relative "page"
 require_relative "url_helper"
 require_relative "web_helper"
 
-module SiteMapper
+module Sitemapper
   class Core
     def initialize(out, opts)
       @out = out
@@ -20,10 +22,11 @@ module SiteMapper
           crawl_delay: :sleep,
           :http_get => lambda do |url|
             response = WebHelper.get_http_response(url)
-            return nil unless response
+            return unless response
             return response.body.force_encoding("UTF-8")
           end
         })
+
         if error = @robots.error(host)
           msg = "unable to fetch robots.txt"
           LOGGER.fatal msg
@@ -38,8 +41,10 @@ module SiteMapper
         msg = "unable to fetch starting url"
         LOGGER.fatal msg
         $stderr.puts msg
+
         return [nil, start_url]
       end
+
       if response.redirect_count.to_i > 0
         host = UrlHelper::get_normalized_host(response.effective_url) 
         start_url = UrlHelper::get_normalized_url(host, response.effective_url)
@@ -94,7 +99,7 @@ module SiteMapper
 
       threads.each { |thread| thread.join }
 
-      return [root, start_url]
+      [root, start_url]
     end
   end
 end

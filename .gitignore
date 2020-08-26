@@ -1,2 +1,2 @@
-!log/.gitkeep
-log/*
+/tmp/
+*.gem

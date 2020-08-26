@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require "digest/murmurhash"
 
 require_relative "page"
 require_relative "url_helper"
 require_relative "web_helper"
 
-module SiteMapper
+module Sitemapper
   class Scraper
     EXTRACT_TAGS = [
       ["//a/@href", "anchors"],
@@ -44,10 +46,10 @@ module SiteMapper
       normalized_url = UrlHelper.get_normalized_url(args[:host], args[:url])
       unless normalized_url
         LOGGER.error "failed to normalize url #{args[:url]}"
-        return nil
+        return
       end
       
-      return nil if is_url_already_seen?(normalized_url, args[:depth])
+      return if is_url_already_seen?(normalized_url, args[:depth])
       set_already_seen_url(normalized_url)
       page = Page.new(normalized_url)
       return page unless should_crawl_page?(args[:host], page, args[:depth])
@@ -74,7 +76,7 @@ module SiteMapper
         end
 
         page.path = normalized_url # modify path to match redirect
-        return nil if is_url_already_seen?(normalized_url, args[:depth])
+        return if is_url_already_seen?(normalized_url, args[:depth])
         set_already_seen_url(normalized_url)
         return page unless should_crawl_page?(args[:host], page, args[:depth])
       end
@@ -92,7 +94,7 @@ module SiteMapper
 
       LOGGER.debug "#{UrlHelper.log_prefix(args[:depth])} scraped page at #{normalized_url}"
 
-      return page
+      page
     end
 
     def is_url_already_seen?(url, depth)
@@ -101,7 +103,7 @@ module SiteMapper
         return true
       end
 
-      return false
+      false
     end
 
     def set_already_seen_url(url)
@@ -130,7 +132,7 @@ module SiteMapper
         return false
       end
 
-      return true
+      true
     end
   end
 end

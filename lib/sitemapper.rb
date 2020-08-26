@@ -1,29 +1,30 @@
+# frozen_string_literal: true
+
 require "optparse"
 require "ostruct"
 
-require_relative "config/patch"
 require_relative "config/init_settings"
 require_relative "config/init_logger"
-require_relative "version"
+require_relative "sitemapper/version"
 require_relative "core"
 require_relative "url_helper"
 require_relative "report_generator"
 
-module SiteMapper
+module Sitemapper
   class Cli
     attr_reader :opt_parser
 
-    def initialize(out = nil, args=[], run_file=File.basename(__FILE__))
+    def initialize(out = nil, args = [], run_file = File.basename(__FILE__))
       @out = out
       @args = args
       
       @options = OpenStruct.new
-      @options.use_robots = SETTINGS[:use_robots]
-      @options.max_page_depth = SETTINGS[:max_page_depth]
-      @options.log_level = SETTINGS[:log_level].to_i
-      @options.report_type = SETTINGS[:report_type]
-      @options.frequency_type = SETTINGS[:sitemap_frequency_type]
-      @options.scraper_threads = SETTINGS[:scraper_threads].to_i
+      @options.use_robots = Sitemapper::SETTINGS[:use_robots]
+      @options.max_page_depth = Sitemapper::SETTINGS[:max_page_depth]
+      @options.log_level = Sitemapper::SETTINGS[:log_level].to_i
+      @options.report_type = Sitemapper::SETTINGS[:report_type]
+      @options.frequency_type = Sitemapper::SETTINGS[:sitemap_frequency_type]
+      @options.scraper_threads = Sitemapper::SETTINGS[:scraper_threads].to_i
 
       Thread.current[:name] = "**"
 
@@ -89,35 +90,33 @@ module SiteMapper
     end
 
     def run
-      begin
-        @opt_parser.parse! @args
-        if @args.empty?
-          @out.puts @opt_parser if @out
-          exit
-        end
-
-        start_url = @args.shift
-        normalized_host = UrlHelper::get_normalized_host(start_url)
-        normalized_start_url = UrlHelper::get_normalized_url(normalized_host, start_url)
-        if normalized_host.nil? || normalized_start_url.nil?
-          @out.puts @opt_parser if @out
-          exit
-        end
-
-        LOGGER.info "starting with #{normalized_start_url}, options #{@options.inspect}"
-        
-        start_time = Time.now
-        root, normalized_start_url = Core.new(@out, @options).start(normalized_host, normalized_start_url)
-        return unless root
-
-        LOGGER.info "found #{root.count} pages in #{Time.now - start_time}s"
-
-        @out.puts ReportGenerator.new(@options, normalized_start_url).send("to_#{@options.report_type}", root) if @out
-      rescue OptionParser::InvalidArgument, OptionParser::InvalidOption, OptionParser::MissingArgument =>e
-        @out.puts e if @out
+      @opt_parser.parse! @args
+      if @args.empty?
         @out.puts @opt_parser if @out
         exit
       end
+
+      start_url = @args.shift
+      normalized_host = UrlHelper::get_normalized_host(start_url)
+      normalized_start_url = UrlHelper::get_normalized_url(normalized_host, start_url)
+      if normalized_host.nil? || normalized_start_url.nil?
+        @out.puts @opt_parser if @out
+        exit
+      end
+
+      LOGGER.info "starting with #{normalized_start_url}, options #{@options.inspect}"
+      
+      start_time = Time.now
+      root, normalized_start_url = Core.new(@out, @options).start(normalized_host, normalized_start_url)
+      return unless root
+
+      LOGGER.info "found #{root.count} pages in #{Time.now - start_time}s"
+
+      @out.puts ReportGenerator.new(@options, normalized_start_url).send("to_#{@options.report_type}", root) if @out
+    rescue OptionParser::InvalidArgument, OptionParser::InvalidOption, OptionParser::MissingArgument =>e
+      @out.puts e if @out
+      @out.puts @opt_parser if @out
+      exit
     end
   end
 end

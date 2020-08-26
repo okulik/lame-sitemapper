@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "sitemapper"
+
+Sitemapper::Cli.new($stdout, ARGV, File.basename(__FILE__)).run

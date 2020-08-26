@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require "addressable/uri"
 require "public_suffix"
 
-module SiteMapper
+module Sitemapper
   class UrlHelper
     SUPPORTED_SCHEMAS = %w(http https)
     LOG_INDENT = " " * 2
@@ -9,13 +11,13 @@ module SiteMapper
     def self.get_normalized_host(host_string)
       host_url = Addressable::URI.heuristic_parse(host_string, scheme: "http")
       
-      return nil unless SUPPORTED_SCHEMAS.include?(host_url.scheme)
-      return nil unless host_url.host
-      return nil if host_url.host =~ /\s/
-      return nil unless PublicSuffix.valid?(host_url.host)
+      return unless SUPPORTED_SCHEMAS.include?(host_url.scheme)
+      return unless host_url.host
+      return if host_url.host =~ /\s/
+      return unless PublicSuffix.valid?(host_url.host)
       host_url.omit!(:path, :query, :fragment)
 
-      return Addressable::URI.encode(host_url, ::Addressable::URI).normalize
+      Addressable::URI.encode(host_url, ::Addressable::URI).normalize
     rescue Addressable::URI::InvalidURIError, TypeError
       nil
     end
@@ -31,12 +33,12 @@ module SiteMapper
         m[:port] = host_url.port
       end
       resource_url.merge!(m) unless m.empty?
-      return nil unless SUPPORTED_SCHEMAS.include?(resource_url.scheme)
-      return nil unless PublicSuffix.valid?(resource_url.host)
+      return unless SUPPORTED_SCHEMAS.include?(resource_url.scheme)
+      return unless PublicSuffix.valid?(resource_url.host)
       resource_url.omit!(:fragment)
       resource_url.query = resource_url.query.split("&").map(&:strip).sort.join("&") unless resource_url.query.nil? || resource_url.query.empty?
 
-      return Addressable::URI.encode(resource_url, ::Addressable::URI).normalize
+      Addressable::URI.encode(resource_url, ::Addressable::URI).normalize
     rescue Addressable::URI::InvalidURIError, TypeError
       nil
     end
