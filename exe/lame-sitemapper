@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+
+require "cli"
+
+LameSitemapper::Cli.new($stdout, ARGV, File.basename(__FILE__)).run

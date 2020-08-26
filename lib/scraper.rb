@@ -6,7 +6,7 @@ require_relative "page"
 require_relative "url_helper"
 require_relative "web_helper"
 
-module Sitemapper
+module LameSitemapper
   class Scraper
     EXTRACT_TAGS = [
       ["//a/@href", "anchors"],

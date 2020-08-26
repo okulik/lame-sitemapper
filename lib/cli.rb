@@ -3,14 +3,12 @@
 require "optparse"
 require "ostruct"
 
-require_relative "config/init_settings"
-require_relative "config/init_logger"
-require_relative "sitemapper/version"
-require_relative "core"
-require_relative "url_helper"
-require_relative "report_generator"
+require "lame_sitemapper"
+require "core"
+require "url_helper"
+require "report_generator"
 
-module Sitemapper
+module LameSitemapper
   class Cli
     attr_reader :opt_parser
 
@@ -19,12 +17,12 @@ module Sitemapper
       @args = args
       
       @options = OpenStruct.new
-      @options.use_robots = Sitemapper::SETTINGS[:use_robots]
-      @options.max_page_depth = Sitemapper::SETTINGS[:max_page_depth]
-      @options.log_level = Sitemapper::SETTINGS[:log_level].to_i
-      @options.report_type = Sitemapper::SETTINGS[:report_type]
-      @options.frequency_type = Sitemapper::SETTINGS[:sitemap_frequency_type]
-      @options.scraper_threads = Sitemapper::SETTINGS[:scraper_threads].to_i
+      @options.use_robots = LameSitemapper::SETTINGS[:use_robots]
+      @options.max_page_depth = LameSitemapper::SETTINGS[:max_page_depth]
+      @options.log_level = LameSitemapper::SETTINGS[:log_level].to_i
+      @options.report_type = LameSitemapper::SETTINGS[:report_type]
+      @options.frequency_type = LameSitemapper::SETTINGS[:sitemap_frequency_type]
+      @options.scraper_threads = LameSitemapper::SETTINGS[:scraper_threads].to_i
 
       Thread.current[:name] = "**"
 
@@ -83,7 +81,7 @@ module Sitemapper
         end
 
         opts.on_tail("-v", "--version", "Show version") do
-          @out.puts Version::STRING if @out
+          @out.puts LameSitemapper::VERSION if @out
           exit
         end
       end

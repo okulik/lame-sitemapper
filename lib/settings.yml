@@ -6,7 +6,7 @@ default: &default
     followlocation: true
     ssl_verifypeer: false
     ssl_verifyhost: 2
-    useragent: sitemapper v0.0.0.1
+    useragent: lame-sitemapper v0.0.0.1
     connecttimeout: 5
     timeout: 5
   report_type: text

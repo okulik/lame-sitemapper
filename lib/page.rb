@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-module Sitemapper
+require "forwardable"
+
+module LameSitemapper
   class Page
     extend Forwardable
 
-    def_delegators :@sub_pages, :<<
     def_delegators :each, :count
 
     attr_accessor :path
@@ -28,6 +29,12 @@ module Sitemapper
       @links = []
       @scripts = []
       @non_scraped_code = 0
+    end
+
+    def <<(page)
+      @sub_pages << page
+
+      self
     end
 
     def scraped?

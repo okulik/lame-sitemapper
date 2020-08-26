@@ -3,7 +3,7 @@
 require "addressable/uri"
 require "public_suffix"
 
-module Sitemapper
+module LameSitemapper
   class UrlHelper
     SUPPORTED_SCHEMAS = %w(http https)
     LOG_INDENT = " " * 2

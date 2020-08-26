@@ -3,7 +3,7 @@
 require "graphviz"
 require_relative "page"
 
-module Sitemapper
+module LameSitemapper
   class ReportGenerator
     INDENT = " "
     XML_PROLOG = <<-EOS

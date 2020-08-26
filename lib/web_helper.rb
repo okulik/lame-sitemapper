@@ -2,7 +2,7 @@
 
 require "typhoeus"
 
-module Sitemapper
+module LameSitemapper
   class WebHelper
     def self.get_http_response(url, method=:get)
       response = Typhoeus.send(method, url.to_s, SETTINGS[:web_settings])

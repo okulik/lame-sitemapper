@@ -9,7 +9,7 @@ require_relative "page"
 require_relative "url_helper"
 require_relative "web_helper"
 
-module Sitemapper
+module LameSitemapper
   class Core
     def initialize(out, opts)
       @out = out
