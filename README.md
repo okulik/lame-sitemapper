@@ -1,4 +1,4 @@
-# SiteMapper
+# lame-sitemapper
 
 A tool for a simple, static web pages hierarchy exploration. It starts from the arbitrary page you provide and descents into the tree of links until it has either traversed all possible content on the web site or has stopped at some predefined traversal depth. It is written in Ruby and implemented as a CLI application. Based on user preference, it can output text reports in a standard sitemap.xml form (used by many search engines), a dot file (for easier site hierarchy visualization, [graphviz][graphviz] compatible), a plain text file (displaying detailed hierarchical relations between pages) and a simple HTML format.
 
